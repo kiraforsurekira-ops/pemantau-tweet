@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Pemantau Tweet</title>
 <style>
-:root{--bg:#cfcdf0;--card:#fff0f7;--ink:#4a3b46;--mute:#8a7683;--pink:#c2307a;--hl:#fbc9e2;--line:#f0d3e2;--chipbg:#fde6f0;--border:#f2a6cb;
+:root{--bg:#e6dcec;--card:#faf5fb;--ink:#2f2236;--mute:#7d6a85;--pink:#593f62;--hl:#e3cdea;--line:#e6d9ea;--chipbg:#efe3f1;--border:#c3a6cc;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241f3d;--card:#3a2a3c;--ink:#f6e8f0;--mute:#b9a3b1;--pink:#ff8cc4;--hl:#7a2c58;--line:#5a4256;--chipbg:#4b3248;--border:#8b4a70}}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#1e1626;--card:#2f2238;--ink:#f3e8f6;--mute:#b7a2c0;--pink:#d9b8e6;--hl:#593f62;--line:#46344f;--chipbg:#3d2c47;--border:#6e5179}}
 *{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:linear-gradient(180deg,var(--bg),#e3d3f0);background-attachment:fixed;color:var(--ink);font-family:"Inter","Segoe UI",system-ui,sans-serif;min-height:100vh}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:linear-gradient(180deg,#241f3d,#2e2040)}}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#f1e6ee);background-attachment:fixed;color:var(--ink);font-family:"Inter","Segoe UI",system-ui,sans-serif;min-height:100vh}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:linear-gradient(180deg,#1e1626,#2a1d33)}}
 main{max-width:520px;margin:0 auto;padding:16px 14px 40px}
 h1{font-size:20px;margin:6px 4px 12px}
 .bar{display:flex;gap:8px;margin-bottom:10px}
@@ -58,7 +58,7 @@ hr{border:0;border-top:1px solid var(--line);margin:14px 0}
 <div id="list"></div>
 </main>
 <script>
-const KW=["wtb","mau","cari","butuh","#zonauang","beli","jual"];
+const KW=["wtb","#zonauang","#zonajajan","#bealanja"];
 const TEMPLATES={"Mencari produk":"Halo kak, aku ready {produk}. Boleh cek DM ya 🙌","Menjual":"Halo kak, kami juga punya {produk} dengan harga bersahabat. Cek DM ya!"};
 let DATA=[];
 const APPS={Netflix:["N","#a3262a","#fbe6e6"],Capcut:["C","#444","#eee"],Spotify:["S","#1c7a45","#e0f5e8"],Canva:["C","#6a3fb5","#ece3fb"],Lainnya:["?","#555","#eee"]};
@@ -106,7 +106,7 @@ else if(e.target.closest(".ex")){c.classList.toggle("open")}});
 document.getElementById("list").addEventListener("change",e=>{
 if(e.target.classList.contains("tpl")){const c=e.target.closest(".card"),d=DATA[+c.dataset.i];
 c.querySelector("textarea").value=TEMPLATES[e.target.value].replace("{produk}",d.app)}});
-render();load();setInterval(load,180000);
+render();load();setInterval(load,120000);setInterval(()=>{DATA=DATA.map(x=>({...x,m:Math.max(1,Math.round((Date.now()-new Date(x.created))/60000))})).filter(x=>x.m<=10);render()},30000);
 </script>
 </body>
 </html>
