@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Pemantau Tweet</title>
+<style>
+:root{--bg:#cfcdf0;--card:#fff0f7;--ink:#4a3b46;--mute:#8a7683;--pink:#c2307a;--hl:#fbc9e2;--line:#f0d3e2;--chipbg:#fde6f0;--border:#f2a6cb;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#241f3d;--card:#3a2a3c;--ink:#f6e8f0;--mute:#b9a3b1;--pink:#ff8cc4;--hl:#7a2c58;--line:#5a4256;--chipbg:#4b3248;--border:#8b4a70}}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:linear-gradient(180deg,var(--bg),#e3d3f0);background-attachment:fixed;color:var(--ink);font-family:"Inter","Segoe UI",system-ui,sans-serif;min-height:100vh}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) body{background:linear-gradient(180deg,#241f3d,#2e2040)}}
+main{max-width:520px;margin:0 auto;padding:16px 14px 40px}
+h1{font-size:20px;margin:6px 4px 12px}
+.bar{display:flex;gap:8px;margin-bottom:10px}
+.bar input{flex:1;min-width:0;padding:11px 14px;border-radius:14px;border:1.5px solid var(--border);background:var(--card);color:var(--ink);font:inherit;font-size:14px}
+.tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto}
+.tabs button{border:1.5px solid var(--border);background:var(--card);color:var(--pink);border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;white-space:nowrap;cursor:pointer}
+.tabs button.on{background:var(--pink);color:#fff;border-color:var(--pink)}
+.card{background:var(--card);border:1.5px solid var(--border);border-radius:28px;padding:18px 18px 10px;margin-bottom:16px;box-shadow:0 8px 24px rgba(194,48,122,.1)}
+.top{display:flex;gap:12px;align-items:center}
+.av{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;font-family:Georgia,serif;font-size:20px;flex:none}
+.who{flex:1;min-width:0}
+.who b{display:block;font-size:17px}
+.who span{font-size:13px;color:var(--mute)}
+.badge{border:1.5px solid var(--border);background:var(--chipbg);color:var(--pink);border-radius:999px;padding:5px 14px;font-size:13px}
+.bm{background:none;border:0;cursor:pointer;color:var(--mute);padding:4px}
+.bm svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8}
+.bm.on{color:var(--pink)}.bm.on svg{fill:currentColor}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}
+.chip{border:1.5px solid var(--border);border-radius:12px;padding:5px 12px;font-size:13px;color:var(--pink);background:var(--chipbg)}
+.txt{font-size:19px;line-height:1.5;margin:6px 0 12px;overflow-wrap:anywhere}
+mark{background:var(--hl);color:var(--pink);font-weight:600;border-radius:7px;padding:0 6px}
+.match{font-size:13px;color:var(--mute);display:flex;gap:6px;align-items:center}
+.match svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8}
+hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+.act{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.btn{border:1.5px solid var(--border);border-radius:16px;padding:11px 18px;color:var(--pink);font-weight:700;font-size:14px;background:transparent;text-decoration:none;cursor:pointer;font-family:inherit}
+.lnk{color:var(--mute);font-size:13px;text-decoration:none}
+.ft{display:flex;justify-content:flex-end}
+.ft button{border:0;background:none;color:var(--mute);font:inherit;font-size:14px;display:flex;gap:10px;align-items:center;padding:8px 4px;cursor:pointer}
+.ft svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;transition:transform .2s}
+.card.open .ft svg{transform:rotate(180deg)}
+.more{display:none;margin-top:6px}
+.card.open .more{display:block}
+.more textarea{width:100%;min-height:80px;border-radius:14px;border:1.5px solid var(--border);background:transparent;color:var(--ink);font:inherit;font-size:14px;padding:10px;resize:vertical}
+.more select{margin:8px 0;padding:8px;border-radius:10px;border:1.5px solid var(--border);background:var(--card);color:var(--ink);font:inherit}
+.empty{text-align:center;color:var(--mute);padding:40px 0}
+</style>
+</head>
+<body>
+<main>
+<h1>Pemantau tweet</h1>
+<div class="bar"><input id="q" placeholder="Cari kata kunci, mis. wtb, jual, netflix"></div>
+<div class="tabs" id="tabs"></div>
+<div id="list"></div>
+</main>
+<script>
+const KW=["wtb","mau","cari","butuh","#zonauang","beli","jual"];
+const TEMPLATES={"Mencari produk":"Halo kak, aku ready {produk}. Boleh cek DM ya 🙌","Menjual":"Halo kak, kami juga punya {produk} dengan harga bersahabat. Cek DM ya!"};
+let DATA=[];
+const APPS={Netflix:["N","#a3262a","#fbe6e6"],Capcut:["C","#444","#eee"],Spotify:["S","#1c7a45","#e0f5e8"],Canva:["C","#6a3fb5","#ece3fb"],Lainnya:["?","#555","#eee"]};
+async function load(){
+ try{const r=await fetch("/api/tweets");if(!r.ok)throw new Error(r.status);
+  const j=await r.json();
+  DATA=j.items.map(x=>{const a=APPS[x.app]||APPS.Lainnya;return{...x,ic:a[0],c:a[1],bg:a[2],m:Math.max(1,Math.round((Date.now()-new Date(x.created))/60000))}});
+  render();
+ }catch(e){document.getElementById("list").innerHTML='<div class="empty">Gagal memuat tweet ('+e.message+'). Cek token Apify di Cloudflare.</div>'}
+}
+const saved=new Set();let filter="Semua",query="";
+const esc=s=>s.replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function words(d){const all=KW.concat(query?query.toLowerCase().split(/\s+/).filter(Boolean):[]);return all.concat(d.app.toLowerCase())}
+function hl(d){let out=esc(d.t);const ws=[...new Set(words(d))].sort((a,b)=>b.length-a.length);
+const re=new RegExp("(^|\\s)("+ws.map(w=>w.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?=\\s|$)","gi");
+return out.replace(re,(m,s,w)=>w.startsWith("#")?s+w:s+"<mark>"+w+"</mark>")}
+function matched(d){return KW.filter(k=>d.t.toLowerCase().includes(k))}
+const chev='<svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
+function render(){
+const tabs=["Semua","Mencari produk","Menjual","Tersimpan"];
+document.getElementById("tabs").innerHTML=tabs.map(t=>`<button class="${t===filter?'on':''}" data-t="${t}">${t}</button>`).join("");
+const items=DATA.map((d,i)=>({d,i})).filter(({d,i})=>(filter==="Semua"||(filter==="Tersimpan"?saved.has(i):d.type===filter))&&(!query||(d.t+d.app+d.h).toLowerCase().includes(query.toLowerCase())));
+document.getElementById("list").innerHTML=items.length?items.map(({d,i})=>{
+const mt=matched(d);const mn=d.m>=60?Math.round(d.m/60)+" jam":d.m+" menit";
+const reply=TEMPLATES[d.type].replace("{produk}",d.app);
+return `<article class="card" data-i="${i}">
+<div class="top"><div class="av" style="background:${d.bg};color:${d.c}">${esc(d.n[0].toUpperCase())}</div>
+<div class="who"><b>${esc(d.n)}</b><span>@${d.h} · ${mn} lalu</span></div>
+<span class="badge">Baru</span>
+<button class="bm ${saved.has(i)?'on':''}" aria-label="Simpan"><svg viewBox="0 0 24 24"><path d="M6 3h12v18l-6-4-6 4z"/></svg></button></div>
+<div class="chips"><span class="chip" style="background:${d.bg};color:${d.c}"><b style="font-family:Georgia,serif">${d.ic}</b> ${d.app}</span><span class="chip">${d.type}</span></div>
+<p class="txt">${hl(d)}</p>
+<div class="match"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>Cocok: ${mt.length?mt.join(" · "):"dari kata kunci"}</div>
+<hr><div class="act"><a class="btn" target="_blank" rel="noopener" href="https://twitter.com/intent/tweet?in_reply_to=${d.id}&text=${encodeURIComponent('@'+d.h+' '+reply)}">↗ Balas pakai template</a><a class="lnk" target="_blank" rel="noopener" href="https://x.com/${d.h}/status/${d.id}">Buka tweet ↗</a></div>
+<div class="more"><select class="tpl">${Object.keys(TEMPLATES).map(k=>`<option ${k===d.type?'selected':''}>${k}</option>`).join("")}</select>
+<textarea>${esc(reply)}</textarea></div>
+<div class="ft"><button class="ex">Baru ${chev}</button></div></article>`}).join(""):'<div class="empty">Belum ada tweet yang cocok.</div>';
+}
+document.getElementById("tabs").onclick=e=>{const t=e.target.dataset.t;if(t){filter=t;render()}};
+document.getElementById("q").oninput=e=>{query=e.target.value.trim();render()};
+document.getElementById("list").addEventListener("click",e=>{
+const c=e.target.closest(".card");if(!c)return;const i=+c.dataset.i;
+if(e.target.closest(".bm")){saved.has(i)?saved.delete(i):saved.add(i);render()}
+else if(e.target.closest(".ex")){c.classList.toggle("open")}});
+document.getElementById("list").addEventListener("change",e=>{
+if(e.target.classList.contains("tpl")){const c=e.target.closest(".card"),d=DATA[+c.dataset.i];
+c.querySelector("textarea").value=TEMPLATES[e.target.value].replace("{produk}",d.app)}});
+render();load();setInterval(load,180000);
+</script>
+</body>
+</html>
